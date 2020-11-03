@@ -1,0 +1,4 @@
+<environment>
+	<object position="min 48.40111 -4.50019 0" orientation="0 0 0" shape="prism 10 48.40111 -4.50019 48.40094 -4.49960 48.40201 -4.49889 48.402212 -4.49955" material="brick" texture="glass.jpg" fill-color="255 100 50" opacity="0.9"/>
+
+</environment>
