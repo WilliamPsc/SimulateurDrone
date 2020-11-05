@@ -1,8 +1,9 @@
-<environment>
-	<object position="min 48.40111 -4.50019 0" orientation="0 0 0" shape="prism 10 
-								48.40111 -4.50019 
-								48.40094 -4.49960 
-								48.40201 -4.49889 
-								48.402212 -4.49955" 
-	material="brick" fill-color="255 100 50" opacity="0.3"/>
+<environment>    
+    <!-- Obstacles -->
+    <object position="min 0.5 0.5 0" orientation="0 0 0" shape="cuboid 10 50 10" material="brick" fill-color="255 100 50" opacity="0.9" texture="brick.jpg"/> <!-- 10m de long / 50m de large / 10m de haut -->
+    <object position="min 20 0.5 0" orientation="0 0 0" shape="cuboid 50 30 15" material="brick" fill-color="255 100 50" opacity="0.9" texture="brick.jpg"/> <!-- 50m de long / 30m de large / 15m de haut -->
+    <object position="min 100 0 0" orientation="0 0 0" shape="cuboid 10 5 7" material="brick" fill-color="255 100 50" opacity="0.9" texture="brick.jpg"/> <!-- 10m de long / 5m de large / 7m de haut -->
+    <object position="min 120 0.5 0" orientation="0 0 0" shape="cuboid 30 100 25" material="brick" fill-color="255 100 50" opacity="0.9" texture="brick.jpg"/> <!-- 30m de long / 100m de large / 25m de haut -->
+    
+    <object position="min 200 0.5 0" orientation="0 0 0" shape="cuboid 100 60 210" material="brick" fill-color="255 100 50" opacity="0.9" texture="brick.jpg"/> <!-- 30m de long / 100m de large / 210m de haut -->
 </environment>
