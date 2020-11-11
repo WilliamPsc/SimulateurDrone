@@ -1,8 +1,8 @@
 /**
-* @date			05/11/2020
+* @date			10/11/2020
 * @version		2.0
 * @author		William PENSEC | M2 LSE
-* @description	Génération d'obstacles aléatoires pour une simulation de drônes. Les obstacles ne doivent pas se superposer.
+* @description	Génération d'obstacles à partir de données d'OpenStreetMap pour une simulation de drônes.
 *
 **/
 
@@ -63,15 +63,14 @@ int main(int argc, char* argv[], char* envp[])
 	for (xml_node<>* wayNode = rootNode->first_node("way"); wayNode != 0; wayNode = wayNode->next_sibling()) {
 		for (xml_node<>* tagNode = wayNode->first_node("tag"); tagNode != 0; tagNode = tagNode->next_sibling()) {
 			if (strcmp(tagNode->first_attribute("k")->value(), "building") == 0) {
-				/*for (xml_node<>* ndNode = wayNode->first_node("nd"); ndNode != 0; ndNode = ndNode->next_sibling()) {
+				for (xml_node<>* ndNode = wayNode->first_node("nd"); ndNode != 0; ndNode = ndNode->next_sibling()) {
 					for (xml_node<>* nodeNode = rootNode->first_node("node"); nodeNode != 0 ; nodeNode = nodeNode->next_sibling()) {
 						if (strcmp(nodeNode->first_attribute("id")->value(), ndNode->first_attribute("ref")->value()) == 0) {
 							fileTemp << "Latitude : " << nodeNode->first_attribute("lat")->value() << " | Longitude : " << nodeNode->first_attribute("lon")->value() << endl;
 						}
 					}
-				}*/
-				fileTemp << wayNode->name() << endl;
-				//fileTemp << endl;
+				}
+				fileTemp << endl;
 			}
 		}
 	}
