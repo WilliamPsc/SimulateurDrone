@@ -1,6 +1,6 @@
 /**
 * \date			19/11/2020
-* \version		1.1
+* \version		1.1.2
 * \author		William PENSEC
 * \description	Header de la classe generationObstacles. On y trouve les déclarations des fonctions et des attributs de la classe.
 **/
@@ -43,7 +43,7 @@ public:
 
 protected :
 	/* Fonctions utilisées par startProg() */
-	void writeFile();
+	void writeFile(int nbNode);
 	void initVariablesString();
 	int requete();
 	void genereMap();

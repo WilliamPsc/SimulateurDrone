@@ -1,6 +1,6 @@
 /**
 * \date			19/11/2020
-* \version		1.1
+* \version		1.1.2
 * \author		William PENSEC
 * \description	Contenu de la classe generationObstacles. On y trouve le code des fonctions ainsi que les appels de fonction pour l'exécution du programme.
 **/
@@ -63,6 +63,8 @@ generationObstacles::~generationObstacles(void) {}
 int generationObstacles::startProg(void)
 {
 	// Variables locales
+	int sortie = 0; // Sert au DEBUG
+	int nbNode = 0; // Sert au calcul de la hauteur
 	/*
 		_tabMinMax[0][0] = minLon = 180.0;
 		_tabMinMax[0][1] = minLat = 90.0;
@@ -90,14 +92,14 @@ int generationObstacles::startProg(void)
 	_doc.parse<0>(&_buffer[0]);
 	_rootNode = _doc.first_node("osm");
 
-	int sortie = 0;
-
 	// Récupérer les informations du fichier xml et les stocker en forme dans le fichier de sortie
 	for (xml_node<>* wayNode = _rootNode->first_node("way"); wayNode && !sortie; wayNode = wayNode->next_sibling()) {
 		for (xml_node<>* tagNode = wayNode->first_node("tag"); tagNode && !sortie; tagNode = tagNode->next_sibling()) {
 			if (strcmp(tagNode->first_attribute("k")->value(), "building") == 0) {
+				nbNode = 0;
 				for (xml_node<>* ndNode = wayNode->first_node("nd"); ndNode; ndNode = ndNode->next_sibling()) {
 					if (strcmp(ndNode->name(), "nd") == 0) {
+						nbNode++;
 						for (xml_node<>* nodeNode = _rootNode->first_node("node"); nodeNode; nodeNode = nodeNode->next_sibling()) {
 							if (strcmp(nodeNode->first_attribute("id")->value(), ndNode->first_attribute("ref")->value()) == 0) {
 								string s1 = nodeNode->first_attribute("lat")->value();
@@ -118,7 +120,7 @@ int generationObstacles::startProg(void)
 					}
 				}
 				if (_tabCoord.size() != 0) {
-					writeFile();
+					writeFile(nbNode);
 					_tabCoord.clear();
 					_tabCoord.resize(0);
 					initVariablesString();
@@ -153,11 +155,13 @@ int generationObstacles::startProg(void)
 * \detail Cette fonction est appellée dans la fonction startProg().
 *	Elle récupère les données de latitude et longitude et les inscrit en mettant en forme dans le fichier de sortie.
 **/
-void generationObstacles::writeFile(void)
+void generationObstacles::writeFile(int nbNode)
 {
+	// Variables locales
 	string delimiter = " ";
 	string pos1, pos2;
 	size_t position = 0;
+	int hauteurMax = 0;
 	double tabLatMinLonMin[2];
 	tabLatMinLonMin[0] = 90; // Latitude Min
 	tabLatMinLonMin[1] = 180; // Longitude Min
@@ -185,6 +189,19 @@ void generationObstacles::writeFile(void)
 		cout << "Position : " << _position << endl;
 	}
 
+	// Calcul d'une hauteur aléatoire maximale
+	hauteurMax = nbNode * 2;
+	if (hauteurMax > 40)
+		hauteurMax = hauteurMax % 40;
+
+	if (hauteurMax < 8)
+		hauteurMax = 10;
+
+	if (DEBUG)
+		cout << "Hauteur du batiment : " << hauteurMax << endl;
+
+	_shape += to_string(hauteurMax);
+
 	// On construit la chaine de caractère pour la forme de l'objet
 	for (auto i = _tabCoord.rbegin(); i != _tabCoord.rend() - 1; ++i) {
 		_shape += " ";
@@ -204,7 +221,7 @@ void generationObstacles::initVariablesString(void)
 	_objet = "\t<object ";
 	_position = "position=\"min ";
 	_orientation = "orientation=\"0 0 0\" ";
-	_shape = "shape=\"prism 10";
+	_shape = "shape=\"prism ";
 	_materiel = "material=\"brick\" ";
 	_color = "fill-color=\"255 100 50\" ";
 	_opacity = "opacity=\"0.9\"/>";
