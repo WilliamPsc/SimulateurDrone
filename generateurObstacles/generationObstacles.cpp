@@ -1,6 +1,6 @@
 /**
-* \date			14/11/2020
-* \version		1.0
+* \date			19/11/2020
+* \version		1.1
 * \author		William PENSEC
 * \description	Contenu de la classe generationObstacles. On y trouve le code des fonctions ainsi que les appels de fonction pour l'exécution du programme.
 **/
@@ -10,6 +10,12 @@
 * \brief Inclusion des fichiers nécessaire à l'exécution du code.
 **/
 #include "generationObstacles.h"
+
+/**
+* \brief Variable globale pour afficher des messages afin de debuger le programme
+* \description Si DEBUG = 1 alors le debug est en place sinon si il est à 0 alors le debug est desactivé
+**/
+#define DEBUG 0
 
 /**
 * \brief Constructeur par défaut de la classe.
@@ -47,7 +53,7 @@ generationObstacles::generationObstacles(string in, string out) {
 /**
 * \brief Destructeur de la classe.
 **/
-generationObstacles::~generationObstacles(void){}
+generationObstacles::~generationObstacles(void) {}
 
 /**
 * \brief Fonction principale du programme.
@@ -84,9 +90,11 @@ int generationObstacles::startProg(void)
 	_doc.parse<0>(&_buffer[0]);
 	_rootNode = _doc.first_node("osm");
 
+	int sortie = 0;
+
 	// Récupérer les informations du fichier xml et les stocker en forme dans le fichier de sortie
-	for (xml_node<>* wayNode = _rootNode->first_node("way"); wayNode; wayNode = wayNode->next_sibling()) {
-		for (xml_node<>* tagNode = wayNode->first_node("tag"); tagNode; tagNode = tagNode->next_sibling()) {
+	for (xml_node<>* wayNode = _rootNode->first_node("way"); wayNode && !sortie; wayNode = wayNode->next_sibling()) {
+		for (xml_node<>* tagNode = wayNode->first_node("tag"); tagNode && !sortie; tagNode = tagNode->next_sibling()) {
 			if (strcmp(tagNode->first_attribute("k")->value(), "building") == 0) {
 				for (xml_node<>* ndNode = wayNode->first_node("nd"); ndNode; ndNode = ndNode->next_sibling()) {
 					if (strcmp(ndNode->name(), "nd") == 0) {
@@ -96,11 +104,15 @@ int generationObstacles::startProg(void)
 								string s2 = nodeNode->first_attribute("lon")->value();
 								string coord = s1 + " " + s2;
 								_tabCoord.push_back(coord);
-							
+
 								if (_tabMinMax[0][0] > stod(s2)) _tabMinMax[0][0] = stod(s2);
 								if (_tabMinMax[0][1] > stod(s1))_tabMinMax[0][1] = stod(s1);
 								if (_tabMinMax[1][0] < stod(s2)) _tabMinMax[1][0] = stod(s2);
 								if (_tabMinMax[1][1] < stod(s1)) _tabMinMax[1][1] = stod(s1);
+
+								if (DEBUG) {
+									cout << "Noeud : " << ndNode->first_attribute("ref")->value() << " | Latitude : " << nodeNode->first_attribute("lat")->value() << " | Longitude : " << nodeNode->first_attribute("lon")->value() << endl;
+								}
 							}
 						}
 					}
@@ -108,7 +120,12 @@ int generationObstacles::startProg(void)
 				if (_tabCoord.size() != 0) {
 					writeFile();
 					_tabCoord.clear();
+					_tabCoord.resize(0);
 					initVariablesString();
+				}
+				if (DEBUG) {
+					sortie = DEBUG;
+					break;
 				}
 			}
 		}
@@ -138,9 +155,38 @@ int generationObstacles::startProg(void)
 **/
 void generationObstacles::writeFile(void)
 {
-	_position += _tabCoord[0];
-	_position += " 0.1\" ";
-	for (auto i = _tabCoord.rbegin(); i != _tabCoord.rend(); ++i) {
+	string delimiter = " ";
+	string pos1, pos2;
+	size_t position = 0;
+	double tabLatMinLonMin[2];
+	tabLatMinLonMin[0] = 90; // Latitude Min
+	tabLatMinLonMin[1] = 180; // Longitude Min
+
+	// On cherche la latitude et longitude minimale du batiment afin de le placer
+	for (int i = 0; i < _tabCoord.size(); i++) {
+		position = _tabCoord[i].find(delimiter);
+		pos1 = _tabCoord[i].substr(position + delimiter.length(), _tabCoord[i].size());
+		
+		position = _tabCoord[i].find(delimiter);
+		pos2 = _tabCoord[i].substr(0, position);
+
+		if (tabLatMinLonMin[0] > stod(pos1)) tabLatMinLonMin[0] = stod(pos1);
+		if (tabLatMinLonMin[1] > stod(pos2)) tabLatMinLonMin[1] = stod(pos2);
+	}
+
+	// On construit la chaine de caractère pour la position minimale
+	_position += to_string(tabLatMinLonMin[1]);
+	_position += " ";
+	_position += to_string(tabLatMinLonMin[0]);
+	_position += " 0\" ";
+
+	if (DEBUG) {
+		cout << "Valeur des positions : " << tabLatMinLonMin[1] << " " << tabLatMinLonMin[0] << endl;
+		cout << "Position : " << _position << endl;
+	}
+
+	// On construit la chaine de caractère pour la forme de l'objet
+	for (auto i = _tabCoord.rbegin(); i != _tabCoord.rend() - 1; ++i) {
 		_shape += " ";
 		_shape += *i;
 	}
@@ -187,7 +233,7 @@ void generationObstacles::genereMap()
 	do {
 		res = requete();
 	} while (res != 0);
-	cout << " Requête exécutée !" << endl;
+	cout << "Requete executee !" << endl;
 }
 
 /**
@@ -195,7 +241,7 @@ void generationObstacles::genereMap()
 * \detail Cette fonction vérifie qu'il y a une connexion internet.
 *			Si oui alors le programme exécute la commande générée dans la fonction genereMap()
 *			sinon elle affiche un message d'erreur et sort du programme entier.
-* \return La valeur de retour de la fonction permet de savoir si le programme s'est bien exécuté avec EXIT_SUCCESS 
+* \return La valeur de retour de la fonction permet de savoir si le programme s'est bien exécuté avec EXIT_SUCCESS
 *			ou sinon EXIT_FAILURE s'il n'y a pas de connexion internet
 **/
 int generationObstacles::requete()

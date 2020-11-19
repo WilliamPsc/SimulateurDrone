@@ -1,6 +1,6 @@
 /**
-* \date			14/11/2020
-* \version		1.0
+* \date			19/11/2020
+* \version		1.1
 * \author		William PENSEC
 * \description Fichier main permettant de tester la classe generationObstacles.
 **/
